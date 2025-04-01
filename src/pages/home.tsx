@@ -22,6 +22,8 @@ import {
   AlertOctagon,
   ExternalLink,
   Flag,
+  PackageOpen,
+  ListPlus,
 } from "lucide-react"
 import { Link } from "react-router-dom"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -45,6 +47,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { Footer } from "@/components/footer"
 
 const navigationItems = [
   { name: "Features", href: "/features" },
@@ -123,6 +126,8 @@ const notifications = [
 export function HomePage() {
   const [unreadCount, setUnreadCount] = useState(2)
   const [notificationsList, setNotificationsList] = useState(notifications)
+  const [resourceType, setResourceType] = useState("medical")
+  const [urgencyLevel, setUrgencyLevel] = useState("medium")
 
   const markAsRead = (id: number) => {
     setNotificationsList(prev => 
@@ -218,7 +223,7 @@ export function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-12">
+    <div className="min-h-screen bg-background flex flex-col">
       <EmergencySOS />
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -370,7 +375,7 @@ export function HomePage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 pt-6 pb-16">
+      <main className="flex-1 max-w-7xl mx-auto px-6 pt-6 pb-16">
         {/* Weather Alert */}
         <div className="relative mb-8 group">
           {/* Background glow effect */}
@@ -472,6 +477,110 @@ export function HomePage() {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Resource Request Button - Moved here */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold">Need Resources?</h2>
+            <span className="text-gray-600">Quick request form for emergency supplies</span>
+          </div>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Card className="group hover:shadow-md transition-all duration-300 cursor-pointer border-blue-100 hover:border-blue-200">
+                <CardContent className="p-5">
+                  <div className="flex items-center gap-4">
+                    <div className="p-2.5 bg-blue-100 rounded-xl group-hover:scale-110 group-hover:bg-blue-200 transition-all duration-300">
+                      <PackageOpen className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-lg text-gray-900 mb-1">Request Emergency Resources</h3>
+                      <p className="text-gray-600">Submit your request for supplies, shelter, or assistance</p>
+                    </div>
+                    <div className="shrink-0">
+                      <div className="p-2 rounded-full bg-blue-50 text-blue-600 group-hover:bg-blue-100 transition-all duration-300">
+                        <PlusCircle className="h-5 w-5" />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Request Emergency Resources</DialogTitle>
+                <DialogDescription>
+                  Submit your resource request. We'll connect you with available supplies and assistance.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <label className="text-sm font-medium">Resource Type</label>
+                  <select 
+                    className="w-full p-2 border rounded-md"
+                    value={resourceType}
+                    onChange={(e) => setResourceType(e.target.value)}
+                  >
+                    <option value="medical">Medical Supplies</option>
+                    <option value="food">Food & Water</option>
+                    <option value="shelter">Shelter</option>
+                    <option value="clothing">Clothing</option>
+                    <option value="transport">Transportation</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div className="grid gap-2">
+                  <label className="text-sm font-medium">Urgency Level</label>
+                  <select 
+                    className="w-full p-2 border rounded-md"
+                    value={urgencyLevel}
+                    onChange={(e) => setUrgencyLevel(e.target.value)}
+                  >
+                    <option value="high">High - Immediate Need</option>
+                    <option value="medium">Medium - Need within 24 hours</option>
+                    <option value="low">Low - Need within 72 hours</option>
+                  </select>
+                </div>
+                <div className="grid gap-2">
+                  <label className="text-sm font-medium">Description</label>
+                  <textarea 
+                    className="w-full p-2 border rounded-md h-24"
+                    placeholder="Describe what you need and your situation..."
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <label className="text-sm font-medium">Location</label>
+                  <div className="flex gap-2">
+                    <input 
+                      type="text"
+                      className="flex-1 p-2 border rounded-md"
+                      placeholder="Enter your location"
+                    />
+                    <Button 
+                      variant="outline"
+                      size="icon"
+                      className="shrink-0"
+                    >
+                      <MapPin className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button 
+                  type="submit" 
+                  className="w-full bg-blue-500 hover:bg-blue-600 text-white"
+                  onClick={() => {
+                    // Handle submission
+                    console.log("Resource request submitted");
+                  }}
+                >
+                  <ListPlus className="w-4 h-4 mr-2" />
+                  Submit Request
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
 
         {/* Nearby Safety Points */}
@@ -1080,6 +1189,9 @@ export function HomePage() {
           </div>
         </div>
       </main>
+
+      {/* Footer */}
+      <Footer />
     </div>
   )
 } 
