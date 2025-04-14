@@ -34,18 +34,18 @@ interface ReportResourceModalProps {
 
 export function ReportResourceModal({ onSubmit }: ReportResourceModalProps) {
   const [open, setOpen] = React.useState(false)
-  const [type, setType] = React.useState<TranslationKey>(resourceTypes[0].name)
+  const [type, setType] = React.useState<TranslationKey>('food' as TranslationKey)
   const [title, setTitle] = React.useState("")
   const [description, setDescription] = React.useState("")
   const [location, setLocation] = React.useState("")
   const { t } = useLanguage()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     onSubmit({ type, title, description, location })
     setOpen(false)
     // Reset form
-    setType(resourceTypes[0].name)
+    setType('food' as TranslationKey)
     setTitle("")
     setDescription("")
     setLocation("")

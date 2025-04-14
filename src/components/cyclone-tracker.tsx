@@ -37,7 +37,7 @@ export function CycloneTracker() {
   const [isExpanded, setIsExpanded] = useState(false)
   const { t } = useLanguage()
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: CycloneAlert['status']): string => {
     switch (status) {
       case 'warning':
         return 'bg-yellow-500'
@@ -56,7 +56,7 @@ export function CycloneTracker() {
         <CardTitle className="text-lg font-medium">
           {t('cyclone_tracker.title')}
         </CardTitle>
-        <Badge variant={mockCycloneData.status === 'warning' ? 'warning' : 'destructive'}>
+        <Badge variant={mockCycloneData.status === 'warning' ? 'secondary' : 'destructive'}>
           {t(`cyclone_tracker.${mockCycloneData.status}`)}
         </Badge>
       </CardHeader>

@@ -18,8 +18,26 @@ import { PageHeader } from "@/components/page-header"
 import { useLanguage } from "@/lib/language-context"
 import type { TranslationKey } from "@/lib/language-context"
 
+interface Resource {
+  id: string
+  type: TranslationKey
+  title: string
+  description: string
+  location: string
+  distance: string
+  reportedBy: string
+  timeAgo: string
+  verifiedCount: number
+  icon: React.ComponentType<{ className?: string }>
+  color: string
+  coordinates: { lat: number; lng: number }
+}
+
 export function ResourcesPage() {
-  const [resources, setResources] = React.useState(mockResources)
+  const [resources, setResources] = React.useState<Resource[]>(mockResources.map(resource => ({
+    ...resource,
+    type: resource.type as TranslationKey
+  })))
   const [searchQuery, setSearchQuery] = React.useState("")
   const [selectedType, setSelectedType] = React.useState<TranslationKey | null>(null)
   const { t } = useLanguage()

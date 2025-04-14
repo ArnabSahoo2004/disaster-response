@@ -6,21 +6,20 @@ import {
   MessageCircle,
 } from "lucide-react"
 import { translations } from "./language-context"
-
-type ResourceType = keyof typeof translations.en
+import type { TranslationKey } from "./language-context"
 
 export const resourceTypes = [
-  { name: "water" as ResourceType, icon: Droplets, color: "bg-blue-100 text-blue-600" },
-  { name: "food" as ResourceType, icon: Utensils, color: "bg-orange-100 text-orange-600" },
-  { name: "shelter" as ResourceType, icon: Home, color: "bg-green-100 text-green-600" },
-  { name: "medical" as ResourceType, icon: Stethoscope, color: "bg-red-100 text-red-600" },
-  { name: "other" as ResourceType, icon: MessageCircle, color: "bg-purple-100 text-purple-600" },
+  { name: "water" as TranslationKey, icon: Droplets, color: "bg-blue-100 text-blue-600" },
+  { name: "food" as TranslationKey, icon: Utensils, color: "bg-orange-100 text-orange-600" },
+  { name: "shelter" as TranslationKey, icon: Home, color: "bg-green-100 text-green-600" },
+  { name: "medical" as TranslationKey, icon: Stethoscope, color: "bg-red-100 text-red-600" },
+  { name: "other" as TranslationKey, icon: MessageCircle, color: "bg-purple-100 text-purple-600" },
 ]
 
 export const mockResources = [
   {
     id: '1',
-    type: "water",
+    type: "water" as TranslationKey,
     title: "Clean Water Available",
     description: "Bottled water and water purification tablets available",
     location: "Community Center, Downtown",
@@ -34,7 +33,7 @@ export const mockResources = [
   },
   {
     id: '2',
-    type: "food",
+    type: "food" as TranslationKey,
     title: "Emergency Food Supplies",
     description: "Non-perishable food items and MREs available",
     location: "Red Cross Shelter, West Side",
@@ -48,7 +47,7 @@ export const mockResources = [
   },
   {
     id: '3',
-    type: "shelter",
+    type: "shelter" as TranslationKey,
     title: "Emergency Shelter",
     description: "Temporary shelter with basic amenities",
     location: "High School Gymnasium",
@@ -62,7 +61,7 @@ export const mockResources = [
   },
   {
     id: '4',
-    type: "medical",
+    type: "medical" as TranslationKey,
     title: "First Aid Supplies",
     description: "Basic medical supplies and first aid kits",
     location: "Local Clinic, North Area",

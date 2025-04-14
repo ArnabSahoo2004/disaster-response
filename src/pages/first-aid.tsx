@@ -25,73 +25,99 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { EmergencySOS } from "@/components/emergency-sos"
 import { useLanguage } from "@/lib/language-context"
+import type { TranslationKey } from "@/lib/language-context"
 
-const emergencyContacts = [
+interface QuickAction {
+  title: TranslationKey
+  icon: React.ComponentType<{ className?: string }>
+  color: string
+  bgColor: string
+  steps: TranslationKey[]
+}
+
+interface FirstAidGuide {
+  title: string
+  description: string
+  icon: React.ComponentType<{ className?: string }>
+  color: string
+  bgColor: string
+  href: string
+}
+
+interface EmergencyContact {
+  name: TranslationKey
+  number: string
+  color: string
+  icon: React.ComponentType<{ className?: string }>
+  description: string
+}
+
+const emergencyContacts: EmergencyContact[] = [
   { 
-    name: "emergency_services", 
+    name: "emergency_services" as TranslationKey, 
     number: "112", 
     color: "bg-red-100 text-red-600", 
     icon: Siren,
     description: "Single emergency number for all emergencies"
   },
   { 
-    name: "ambulance", 
+    name: "ambulance" as TranslationKey, 
     number: "108", 
     color: "bg-purple-100 text-purple-600", 
     icon: HeartPulse,
     description: "Emergency medical services"
   },
   { 
-    name: "women_helpline", 
+    name: "women_helpline" as TranslationKey, 
     number: "181", 
     color: "bg-pink-100 text-pink-600", 
     icon: Shield,
     description: "Women's safety and support"
   },
   { 
-    name: "fire_services", 
+    name: "fire_services" as TranslationKey, 
     number: "101", 
     color: "bg-orange-100 text-orange-600", 
     icon: Flame,
     description: "Fire and rescue services"
   },
   { 
-    name: "child_helpline", 
+    name: "child_helpline" as TranslationKey, 
     number: "1098", 
     color: "bg-blue-100 text-blue-600", 
     icon: Baby,
     description: "Child protection services"
   },
   { 
-    name: "police", 
+    name: "police" as TranslationKey, 
     number: "100", 
     color: "bg-indigo-100 text-indigo-600", 
     icon: Shield,
     description: "Police control room"
   },
   { 
-    name: "osdma", 
+    name: "osdma" as TranslationKey, 
     number: "0674-2395398", 
     color: "bg-yellow-100 text-yellow-600", 
     icon: AlertCircle,
     description: "Odisha State Disaster Management Authority"
   },
   { 
-    name: "cyclone_helpline", 
+    name: "cyclone_helpline" as TranslationKey, 
     number: "0674-2395399", 
     color: "bg-cyan-100 text-cyan-600", 
     icon: AlertCircle,
     description: "Cyclone emergency helpline"
   },
   { 
-    name: "flood_helpline", 
+    name: "flood_helpline" as TranslationKey, 
     number: "0674-2395400", 
     color: "bg-blue-100 text-blue-600", 
     icon: AlertCircle,
     description: "Flood emergency helpline"
   },
   { 
-    name: "heatwave_helpline", 
+    name: "heatwave_helpline" as TranslationKey, 
     number: "0674-2395401", 
     color: "bg-orange-100 text-orange-600", 
     icon: AlertCircle,
@@ -99,45 +125,45 @@ const emergencyContacts = [
   }
 ]
 
-const quickActions = [
+const quickActions: QuickAction[] = [
   {
-    title: "heart_attack",
+    title: 'heart_attack' as TranslationKey,
     icon: Heart,
     color: "bg-red-500",
     bgColor: "bg-red-50",
-    steps: ["call_emergency", "keep_calm", "check_breathing", "start_cpr"]
+    steps: ['call_emergency', 'keep_calm', 'check_breathing', 'start_cpr'] as TranslationKey[]
   },
   {
     title: "stroke",
     icon: Brain,
     color: "bg-purple-500",
     bgColor: "bg-purple-50",
-    steps: ["call_emergency", "keep_calm", "check_breathing", "do_not_panic"]
+    steps: ["call_emergency", "keep_calm", "check_breathing", "do_not_panic"] as TranslationKey[]
   },
   {
     title: "severe_bleeding",
     icon: Droplets,
     color: "bg-blue-500",
     bgColor: "bg-blue-50",
-    steps: ["apply_pressure", "elevate_wound", "call_emergency", "seek_medical"]
+    steps: ["apply_pressure", "elevate_wound", "call_emergency", "seek_medical"] as TranslationKey[]
   },
   {
     title: "snake_bite",
     icon: Bug,
     color: "bg-green-500",
     bgColor: "bg-green-50",
-    steps: ["keep_calm", "call_emergency", "do_not_panic", "seek_medical"]
+    steps: ["keep_calm", "call_emergency", "do_not_panic", "seek_medical"] as TranslationKey[]
   },
   {
     title: "drowning",
     icon: Waves,
     color: "bg-cyan-500",
     bgColor: "bg-cyan-50",
-    steps: ["call_emergency", "check_breathing", "start_cpr", "seek_medical"]
+    steps: ["call_emergency", "check_breathing", "start_cpr", "seek_medical"] as TranslationKey[]
   },
 ]
 
-const firstAidGuides = [
+const firstAidGuides: FirstAidGuide[] = [
   {
     title: "CPR & Choking",
     description: "Learn basic life support procedures",
