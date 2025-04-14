@@ -15,7 +15,8 @@ import {
   Map,
   MessageSquare,
   UserPlus,
-  CheckCircle
+  CheckCircle,
+  Send
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -26,92 +27,269 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { EmergencySOS } from "@/components/emergency-sos"
+import { CommunityMap } from '@/components/community/community-map'
+import { CommunityChat } from '@/components/community/community-chat'
+import { Badge } from "@/components/ui/badge"
+import { cn } from "@/lib/utils"
+import { toast } from "@/components/ui/use-toast"
+import { Toaster } from "@/components/ui/toaster"
+import { useToast } from "@/components/ui/use-toast"
 
-const responseTeams = [
+interface ResponseTeam {
+  name: string
+  type: string
+  description: string
+  location: string
+  distance: string
+  members: number
+  status: string
+  icon: any
+  color: string
+  coordinates: { lat: number; lng: number }
+  phone: string
+}
+
+const responseTeams: ResponseTeam[] = [
   {
     name: "Emergency Medical Team",
     type: "Medical",
     description: "Trained medical professionals providing emergency care",
-    location: "Downtown Medical Center",
-    distance: "0.5 miles",
+    location: "Capital Hospital, Unit-6, Bhubaneswar",
+    distance: "1.2 km",
     members: 12,
     status: "Active",
     icon: HeartPulse,
-    color: "bg-red-100 text-red-600"
+    color: "bg-red-100 text-red-600",
+    coordinates: { lat: 20.2961, lng: 85.8315 },
+    phone: "0674-2391983"
   },
   {
-    name: "Search & Rescue Unit",
+    name: "ODRAF Team",
     type: "Rescue",
-    description: "Specialized team for search and rescue operations",
-    location: "Fire Station #3",
-    distance: "1.2 miles",
+    description: "Odisha Disaster Rapid Action Force - specialized rescue operations",
+    location: "Fire Station, Baramunda, Bhubaneswar",
+    distance: "2.5 km",
     members: 8,
     status: "Active",
     icon: ShieldAlert,
-    color: "bg-blue-100 text-blue-600"
+    color: "bg-blue-100 text-blue-600",
+    coordinates: { lat: 20.2712, lng: 85.7849 },
+    phone: "0674-2397906"
   },
   {
-    name: "Community Support Group",
+    name: "OSDMA Support Group",
     type: "Support",
-    description: "Volunteers providing food, water, and supplies",
-    location: "Community Center",
-    distance: "0.8 miles",
+    description: "Odisha State Disaster Management Authority volunteers",
+    location: "Rajiv Bhawan, Bhubaneswar",
+    distance: "0.8 km",
     members: 15,
     status: "Active",
     icon: Users2,
-    color: "bg-green-100 text-green-600"
+    color: "bg-green-100 text-green-600",
+    coordinates: { lat: 20.2961, lng: 85.8245 },
+    phone: "0674-2395398"
   }
 ]
 
-const communityUpdates = [
+interface CommunityUpdate {
+  id: string
+  title: string
+  description: string
+  location: string
+  coordinates: { lat: number; lng: number }
+  type: string
+  timeAgo: string
+  responses: number
+  status: string
+  verified: boolean
+  icon: any
+  color: string
+  userCreated?: boolean
+}
+
+const communityUpdates: CommunityUpdate[] = [
   {
+    id: "1",
     title: "Volunteers Needed",
-    description: "Looking for volunteers to help distribute supplies at the Community Center",
-    location: "Community Center, Downtown",
-    timeAgo: "2 hours ago",
-    responses: 8,
-    status: "Open",
+    description: "Need volunteers for flood relief efforts in Puri district. Please bring water and food supplies if possible.",
+    location: "Gopabandhu Stadium, Puri",
+    coordinates: { lat: 19.8135, lng: 85.8312 },
     type: "volunteer",
+    timeAgo: "2 hours ago",
+    responses: 5,
+    status: "Open",
+    verified: true,
     icon: Users2,
     color: "bg-purple-100 text-purple-600"
   },
   {
+    id: "2", 
     title: "Medical Supplies Available",
-    description: "First aid kits and basic medical supplies available at the Medical Center",
-    location: "Downtown Medical Center",
-    timeAgo: "4 hours ago",
-    responses: 12,
-    status: "Open",
+    description: "First aid kits and basic medications available for affected areas in Cuttack.",
+    location: "SCB Medical College, Cuttack",
+    coordinates: { lat: 20.4686, lng: 85.8792 },
     type: "supplies",
+    timeAgo: "1 hour ago",
+    responses: 3,
+    status: "Open",
+    verified: true,
     icon: HeartPulse,
     color: "bg-red-100 text-red-600"
   },
   {
+    id: "3",
     title: "Emergency Shelter Open",
-    description: "Temporary shelter with basic amenities available at the High School",
-    location: "High School Gymnasium",
-    timeAgo: "1 hour ago",
-    responses: 15,
-    status: "Open",
+    description: "Temporary shelter available at Kalinga Stadium with food and basic amenities. Can accommodate up to 500 people.",
+    location: "Kalinga Stadium, Bhubaneswar",
+    coordinates: { lat: 20.2961, lng: 85.8245 },
     type: "shelter",
+    timeAgo: "30 minutes ago",
+    responses: 8,
+    status: "Open",
+    verified: true,
     icon: ShieldAlert,
     color: "bg-blue-100 text-blue-600"
   }
 ]
 
+// Update form data interface
+interface UpdateFormData {
+  title: string;
+  description: string;
+  location: string;
+  type: string;
+  coordinates: { lat: number; lng: number };
+}
+
 export function CommunityPage() {
+  const { toast } = useToast()
   const [showPostForm, setShowPostForm] = useState(false)
   const [showFilterDialog, setShowFilterDialog] = useState(false)
   const [showMap, setShowMap] = useState(false)
   const [showChat, setShowChat] = useState(false)
   const [selectedTeamType, setSelectedTeamType] = useState<string>("all")
   const [selectedUpdateType, setSelectedUpdateType] = useState<string>("all")
+  const [updates, setUpdates] = useState<CommunityUpdate[]>(communityUpdates)
+  
+  // Update form state with coordinates
+  const [formData, setFormData] = useState<UpdateFormData>({
+    title: "",
+    description: "",
+    location: "",
+    type: "volunteer",
+    coordinates: { lat: 20.2961, lng: 85.8245 } // Default to Bhubaneswar coordinates
+  })
+
+  const handleFormChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }))
+  }
+
+  const handleDelete = (updateId: string) => {
+    setUpdates(prev => prev.filter(update => update.id !== updateId))
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    // Create new update
+    const newUpdate = {
+      id: Date.now().toString(),
+      ...formData,
+      timeAgo: "Just now",
+      responses: 0,
+      status: "Open",
+      verified: false,
+      icon: formData.type === "volunteer" ? Users2 : 
+            formData.type === "supplies" ? HeartPulse : 
+            formData.type === "shelter" ? ShieldAlert : Users2,
+      color: formData.type === "volunteer" ? "bg-purple-100 text-purple-600" :
+             formData.type === "supplies" ? "bg-red-100 text-red-600" :
+             formData.type === "shelter" ? "bg-blue-100 text-blue-600" :
+             "bg-purple-100 text-purple-600",
+      userCreated: true
+    }
+
+    // Add to updates list
+    setUpdates(prev => [newUpdate, ...prev])
+
+    // Reset form
+    setFormData({
+      title: "",
+      description: "",
+      location: "",
+      type: "volunteer",
+      coordinates: { lat: 20.2961, lng: 85.8245 }
+    })
+    setShowPostForm(false)
+  }
+
+  const handleVerify = (id: string) => {
+    setUpdates(prev => prev.map(update => {
+      if (update.id === id) {
+        return { ...update, verified: !update.verified }
+      }
+      return update
+    }))
+    toast({
+      title: "Update Status Changed",
+      description: "The update verification status has been toggled."
+    })
+  }
+
+  const handleRespond = (id: string) => {
+    setUpdates(prev => prev.map(update => {
+      if (update.id === id) {
+        return { ...update, responses: update.responses + 1 }
+      }
+      return update
+    }))
+    toast({
+      title: "Response Recorded",
+      description: "Thank you for responding to this update."
+    })
+  }
+
+  const handleGetDirections = (coordinates: { lat: number; lng: number }) => {
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${coordinates.lat},${coordinates.lng}`
+    window.open(url, '_blank')
+  }
+
+  const handleContactTeam = (phone: string) => {
+    window.location.href = `tel:${phone}`
+    toast({
+      title: "Contacting Team",
+      description: `Calling ${phone}...`,
+      duration: 3000,
+    })
+  }
+
+  const handleGetTeamDirections = (coordinates: { lat: number; lng: number }) => {
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${coordinates.lat},${coordinates.lng}`
+    window.open(url, '_blank')
+    toast({
+      title: "Opening Directions",
+      description: "Directions opened in Google Maps",
+      duration: 3000,
+    })
+  }
+
+  const handleJoinTeam = (teamName: string) => {
+    console.log("Joining team:", teamName) // Debug log
+    toast({
+      title: "Team Joined Successfully",
+      description: `You have joined ${teamName}. The team coordinator will contact you shortly.`,
+      duration: 5000,
+    })
+  }
 
   const filteredTeams = responseTeams.filter(team => 
     selectedTeamType === "all" || team.type.toLowerCase() === selectedTeamType.toLowerCase()
   )
 
-  const filteredUpdates = communityUpdates.filter(update => 
+  const filteredUpdates = updates.filter(update => 
     selectedUpdateType === "all" || update.type?.toLowerCase() === selectedUpdateType.toLowerCase()
   )
 
@@ -205,39 +383,88 @@ export function CommunityPage() {
                 Post Update
               </Button>
             </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
+            <DialogContent className="sm:max-w-[425px] p-0">
+              <div className="px-6 py-4 border-b">
                 <DialogTitle>Post Community Update</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground mt-1">
+                  Share important information with your community. Be clear and specific.
+                </p>
+              </div>
+
+              <form onSubmit={handleSubmit} className="px-6 py-4 space-y-4">
                 <div>
-                  <Label>Title</Label>
-                  <Input placeholder="Enter update title" />
+                  <Label className="text-sm font-medium">Title</Label>
+                  <Input 
+                    value={formData.title}
+                    onChange={(e) => handleFormChange("title", e.target.value)}
+                    placeholder="e.g., Urgent: Volunteers needed for flood relief"
+                    className="mt-1.5"
+                    required
+                  />
                 </div>
+
                 <div>
-                  <Label>Description</Label>
-                  <Textarea placeholder="Describe your update" />
+                  <Label className="text-sm font-medium">Description</Label>
+                  <Textarea 
+                    value={formData.description}
+                    onChange={(e) => handleFormChange("description", e.target.value)}
+                    placeholder="Provide detailed information about your update..."
+                    className="mt-1.5 min-h-[100px]"
+                    required
+                  />
                 </div>
+
                 <div>
-                  <Label>Location</Label>
-                  <Input placeholder="Enter location" />
+                  <Label className="text-sm font-medium">Location</Label>
+                  <Input 
+                    value={formData.location}
+                    onChange={(e) => handleFormChange("location", e.target.value)}
+                    placeholder="e.g., Community Center, 123 Main St"
+                    className="mt-1.5"
+                    required
+                  />
                 </div>
+
                 <div>
-                  <Label>Type</Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select update type" />
+                  <Label className="text-sm font-medium">Update Type</Label>
+                  <Select 
+                    value={formData.type}
+                    onValueChange={(value) => handleFormChange("type", value)}
+                  >
+                    <SelectTrigger className="mt-1.5">
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="volunteer">Volunteer Need</SelectItem>
-                      <SelectItem value="supplies">Supplies Available</SelectItem>
-                      <SelectItem value="shelter">Shelter</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
+                      <SelectItem value="volunteer">
+                        <div className="flex items-center gap-2">
+                          <Users2 className="h-4 w-4 text-purple-600" />
+                          Volunteer Need
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="supplies">
+                        <div className="flex items-center gap-2">
+                          <HeartPulse className="h-4 w-4 text-red-600" />
+                          Supplies Available
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="shelter">
+                        <div className="flex items-center gap-2">
+                          <ShieldAlert className="h-4 w-4 text-blue-600" />
+                          Shelter
+                        </div>
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <Button className="w-full">Post Update</Button>
-              </div>
+
+                <Button 
+                  type="submit" 
+                  className="w-full bg-purple-600 hover:bg-purple-700 mt-6" 
+                  disabled={!formData.title || !formData.description || !formData.location}
+                >
+                  Post Update
+                </Button>
+              </form>
             </DialogContent>
           </Dialog>
         </div>
@@ -270,167 +497,187 @@ export function CommunityPage() {
             <TabsTrigger value="teams">Response Teams</TabsTrigger>
             <TabsTrigger value="updates">Community Updates</TabsTrigger>
           </TabsList>
-          
-          <TabsContent value="teams">
-            {showMap ? (
-              <Card className="h-[500px]">
-                <CardContent className="p-0 h-full">
-                  <div className="h-full bg-gray-100 flex items-center justify-center">
-                    <p className="text-gray-600 flex items-center gap-2">
-                      <MapPin className="h-5 w-5" />
-                      Interactive map coming soon
-                    </p>
+
+          {/* Map View */}
+          {showMap && (
+            <div className="mb-6">
+              <CommunityMap />
+            </div>
+          )}
+
+          {/* Teams Tab Content */}
+          <TabsContent value="teams" className="space-y-4">
+            {filteredTeams.map((team, index) => (
+              <Card key={team.name} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className={`p-3 rounded-lg ${team.color}`}>
+                      {React.createElement(team.icon, { className: "h-6 w-6" })}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="font-semibold text-lg">{team.name}</h3>
+                        <span className="text-sm text-green-600 flex items-center gap-1">
+                          <CheckCircle2 className="h-4 w-4" />
+                          {team.status}
+                        </span>
+                      </div>
+                      <p className="text-gray-600 text-sm mb-3">{team.description}</p>
+                      <div className="flex flex-wrap gap-4 text-sm">
+                        <span className="flex items-center gap-1 text-gray-600">
+                          <MapPin className="h-4 w-4" />
+                          {team.location}
+                        </span>
+                        <span className="text-gray-600">{team.distance}</span>
+                        <span className="text-purple-600">
+                          👥 {team.members} members
+                        </span>
+                      </div>
+                      <div className="flex gap-2 mt-4">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1"
+                          onClick={() => handleContactTeam(team.phone)}
+                        >
+                          <Phone className="h-4 w-4 mr-2" />
+                          Contact Team
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1"
+                          onClick={() => handleGetTeamDirections(team.coordinates)}
+                        >
+                          <MapPin className="h-4 w-4 mr-2" />
+                          Get Directions
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1 bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
+                          onClick={() => handleJoinTeam(team.name)}
+                        >
+                          <UserPlus className="h-4 w-4 mr-2" />
+                          Join Team
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
-            ) : (
-              <div className="grid gap-4">
-                {filteredTeams.map((team) => (
-                  <Card key={team.name} className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-6">
-                      <div className="flex items-start gap-4">
-                        <div className={`p-3 rounded-lg ${team.color}`}>
-                          {React.createElement(team.icon, { className: "h-6 w-6" })}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between mb-2">
-                            <h3 className="font-semibold text-lg">{team.name}</h3>
-                            <span className="text-sm text-green-600 flex items-center gap-1">
-                              <CheckCircle2 className="h-4 w-4" />
-                              {team.status}
-                            </span>
-                          </div>
-                          <p className="text-gray-600 text-sm mb-3">{team.description}</p>
-                          <div className="flex flex-wrap gap-4 text-sm">
-                            <span className="flex items-center gap-1 text-gray-600">
-                              <MapPin className="h-4 w-4" />
-                              {team.location}
-                            </span>
-                            <span className="text-gray-600">{team.distance}</span>
-                            <span className="text-purple-600">
-                              👥 {team.members} members
-                            </span>
-                          </div>
-                          <div className="flex gap-2 mt-4">
-                            <Button variant="outline" size="sm" className="flex-1">
-                              <MessageCircle className="h-4 w-4 mr-2" />
-                              Contact Team
-                            </Button>
-                            <Button variant="outline" size="sm" className="flex-1">
-                              <MapPin className="h-4 w-4 mr-2" />
-                              Get Directions
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="flex-1 bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
-                            >
-                              <UserPlus className="h-4 w-4 mr-2" />
-                              Join Team
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
+            ))}
           </TabsContent>
 
-          <TabsContent value="updates">
-            {showMap ? (
-              <Card className="h-[500px]">
-                <CardContent className="p-0 h-full">
-                  <div className="h-full bg-gray-100 flex items-center justify-center">
-                    <p className="text-gray-600 flex items-center gap-2">
-                      <MapPin className="h-5 w-5" />
-                      Interactive map coming soon
-                    </p>
+          {/* Updates Tab Content */}
+          <TabsContent value="updates" className="space-y-4">
+            {filteredUpdates.map((update) => (
+              <Card key={update.id} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className={`p-3 rounded-lg ${update.color}`}>
+                      {React.createElement(update.icon, { className: "h-6 w-6" })}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-lg">{update.title}</h3>
+                          {update.verified && (
+                            <Badge variant="secondary" className="bg-green-100 text-green-700">
+                              <CheckCircle2 className="h-3 w-3 mr-1" />
+                              Verified
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm text-gray-500 flex items-center gap-1">
+                            <Clock className="h-4 w-4" />
+                            {update.timeAgo}
+                          </span>
+                          {update.userCreated && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50 p-1 h-auto"
+                              onClick={() => handleDelete(update.id)}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-gray-600 text-sm mb-3">{update.description}</p>
+                      <div className="flex flex-wrap gap-4 text-sm">
+                        <span className="flex items-center gap-1 text-gray-600">
+                          <MapPin className="h-4 w-4" />
+                          {update.location}
+                        </span>
+                        <span className="text-green-600">
+                          ✅ {update.responses} responses
+                        </span>
+                        <span className="text-blue-600">
+                          {update.status}
+                        </span>
+                      </div>
+                      <div className="flex gap-2 mt-4">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1"
+                          onClick={() => handleRespond(update.id)}
+                        >
+                          <Send className="h-4 w-4 mr-2" />
+                          Respond ({update.responses})
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1"
+                          onClick={() => handleGetDirections(update.coordinates)}
+                        >
+                          <MapPin className="h-4 w-4 mr-2" />
+                          Get Directions
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className={cn(
+                            "flex-1",
+                            update.verified 
+                              ? "bg-green-50 hover:bg-green-100 text-green-600 border-green-200"
+                              : "bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-200"
+                          )}
+                          onClick={() => handleVerify(update.id)}
+                        >
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                          {update.verified ? 'Unverify' : 'Verify'}
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
-            ) : (
-              <div className="grid gap-4">
-                {filteredUpdates.map((update) => (
-                  <Card key={update.title} className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-6">
-                      <div className="flex items-start gap-4">
-                        <div className={`p-3 rounded-lg ${update.color}`}>
-                          {React.createElement(update.icon, { className: "h-6 w-6" })}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between mb-2">
-                            <h3 className="font-semibold text-lg">{update.title}</h3>
-                            <span className="text-sm text-gray-500 flex items-center gap-1">
-                              <Clock className="h-4 w-4" />
-                              {update.timeAgo}
-                            </span>
-                          </div>
-                          <p className="text-gray-600 text-sm mb-3">{update.description}</p>
-                          <div className="flex flex-wrap gap-4 text-sm">
-                            <span className="flex items-center gap-1 text-gray-600">
-                              <MapPin className="h-4 w-4" />
-                              {update.location}
-                            </span>
-                            <span className="text-green-600">
-                              ✅ {update.responses} responses
-                            </span>
-                            <span className="text-blue-600">
-                              {update.status}
-                            </span>
-                          </div>
-                          <div className="flex gap-2 mt-4">
-                            <Button variant="outline" size="sm" className="flex-1">
-                              <MessageCircle className="h-4 w-4 mr-2" />
-                              Respond
-                            </Button>
-                            <Button variant="outline" size="sm" className="flex-1">
-                              <MapPin className="h-4 w-4 mr-2" />
-                              Get Directions
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="flex-1 bg-blue-50 hover:bg-blue-100 text-blue-600 border-blue-200"
-                            >
-                              <CheckCircle className="h-4 w-4 mr-2" />
-                              Verify
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
+            ))}
           </TabsContent>
         </Tabs>
 
         {/* Community Chat */}
         {showChat && (
           <Dialog open={showChat} onOpenChange={setShowChat}>
-            <DialogContent className="max-w-2xl h-[600px]">
-              <DialogHeader>
-                <DialogTitle>Community Chat</DialogTitle>
+            <DialogContent className="max-w-3xl h-[90vh] p-0 gap-0">
+              <DialogHeader className="px-6 py-4 border-b">
+                <DialogTitle className="text-xl">Community Chat</DialogTitle>
               </DialogHeader>
-              <div className="flex flex-col h-full">
-                <div className="flex-1 overflow-y-auto space-y-4 mb-4">
-                  {/* Chat messages would go here */}
-                  <div className="bg-gray-100 p-4 rounded-lg">
-                    <p className="text-gray-600">Chat functionality coming soon...</p>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Input placeholder="Type your message..." />
-                  <Button>Send</Button>
-                </div>
+              <div className="flex-1 overflow-hidden">
+                <CommunityChat />
               </div>
             </DialogContent>
           </Dialog>
         )}
       </main>
+
+      {/* Add Toaster component at the end */}
+      <Toaster />
     </div>
   )
 } 

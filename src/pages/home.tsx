@@ -24,8 +24,11 @@ import {
   Flag,
   PackageOpen,
   ListPlus,
+  CloudRain,
+  Sun,
+  Wind,
 } from "lucide-react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -48,6 +51,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Footer } from "@/components/footer"
+import { ThemeSwitcher, type WeatherScenario } from '@/components/theme-switcher'
+import { useToast } from "@/components/ui/use-toast"
+import { Toast } from "@/components/ui/toast"
 
 const navigationItems = [
   { name: "Features", href: "/features" },
@@ -61,7 +67,7 @@ const quickAccessItems = [
     name: "Safe Routes",
     description: "Find evacuation routes and safe paths",
     icon: Navigation,
-    href: "/map",
+    href: "/safe-routes",
     color: "bg-blue-500",
     hoverColor: "hover:bg-blue-600",
     bgColor: "bg-blue-50",
@@ -123,11 +129,78 @@ const notifications = [
   }
 ]
 
+// Define scenarios for theme notifications
+const scenarios = {
+  default: {
+    label: 'Normal',
+    description: 'Standard monitoring mode activated',
+    icon: Sun,
+    color: 'bg-background',
+    textColor: 'text-foreground',
+    borderColor: 'border-border'
+  },
+  flood: {
+    label: 'Flood Alert',
+    description: 'Heavy rainfall and flooding conditions detected',
+    icon: CloudRain,
+    color: 'bg-blue-100',
+    textColor: 'text-blue-900',
+    borderColor: 'border-blue-500'
+  },
+  heatwave: {
+    label: 'Heatwave Warning',
+    description: 'Extreme temperature conditions detected',
+    icon: Sun,
+    color: 'bg-orange-100',
+    textColor: 'text-orange-900',
+    borderColor: 'border-orange-500'
+  },
+  cyclone: {
+    label: 'Cyclone Warning',
+    description: 'Severe cyclonic conditions approaching',
+    icon: Wind,
+    color: 'bg-red-100',
+    textColor: 'text-red-900',
+    borderColor: 'border-red-500'
+  }
+}
+
+const scenarioStyles = {
+  default: {
+    background: 'bg-background',
+    pattern: '',
+    headerBg: 'bg-white',
+    cardBg: 'bg-white',
+  },
+  flood: {
+    background: 'bg-blue-50',
+    pattern: 'bg-[url("/patterns/flood.svg")] bg-repeat opacity-10',
+    headerBg: 'bg-blue-500/10 backdrop-blur-sm',
+    cardBg: 'bg-white/80 backdrop-blur-sm',
+  },
+  heatwave: {
+    background: 'bg-orange-50',
+    pattern: 'bg-[url("/patterns/heatwave.svg")] bg-repeat opacity-10',
+    headerBg: 'bg-orange-500/10 backdrop-blur-sm',
+    cardBg: 'bg-white/80 backdrop-blur-sm',
+  },
+  cyclone: {
+    background: 'bg-purple-50',
+    pattern: 'bg-[url("/patterns/cyclone.svg")] bg-repeat opacity-10',
+    headerBg: 'bg-purple-500/10 backdrop-blur-sm',
+    cardBg: 'bg-white/80 backdrop-blur-sm',
+  },
+}
+
 export function HomePage() {
+  const { toast } = useToast()
   const [unreadCount, setUnreadCount] = useState(2)
   const [notificationsList, setNotificationsList] = useState(notifications)
   const [resourceType, setResourceType] = useState("medical")
   const [urgencyLevel, setUrgencyLevel] = useState("medium")
+  const [currentScenario, setCurrentScenario] = useState<WeatherScenario>('default')
+  const styles = scenarioStyles[currentScenario]
+  const navigate = useNavigate()
 
   const markAsRead = (id: number) => {
     setNotificationsList(prev => 
@@ -222,11 +295,54 @@ export function HomePage() {
     console.log('Reporting update:', id)
   }
 
+  const handleThemeChange = (newScenario: WeatherScenario) => {
+    setCurrentScenario(newScenario)
+    
+    // Show theme change notification
+    toast({
+      title: `${scenarios[newScenario].label} Mode Activated`,
+      description: scenarios[newScenario].description,
+      variant: newScenario === 'default' ? 'default' : 'destructive',
+      className: `
+        ${scenarios[newScenario].color} 
+        ${scenarios[newScenario].textColor}
+        border-2 ${scenarios[newScenario].borderColor}
+      `,
+    })
+  }
+
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div 
+      className={`
+        min-h-screen 
+        ${styles.background} 
+        transition-all duration-700 ease-in-out
+      `}
+    >
+      {/* Background Pattern with enhanced transition */}
+      <div 
+        className={`
+          fixed inset-0 pointer-events-none 
+          ${styles.pattern} 
+          transition-all duration-700 ease-in-out
+          opacity-0 scale-95
+          ${currentScenario !== 'default' ? 'opacity-100 scale-100' : ''}
+        `} 
+        aria-hidden="true"
+      />
+
       <EmergencySOS />
-      {/* Header */}
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      
+      {/* Header with enhanced transition */}
+      <header 
+        className={`
+          sticky top-0 z-50 
+          ${styles.headerBg} 
+          border-b 
+          transition-all duration-500
+          backdrop-blur-sm
+        `}
+      >
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 flex h-14 sm:h-16 lg:h-20 items-center">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 sm:gap-3">
@@ -270,6 +386,12 @@ export function HomePage() {
 
             {/* User Actions */}
             <div className="flex items-center gap-1.5 sm:gap-3 lg:gap-6">
+              {/* Theme Switcher */}
+              <ThemeSwitcher
+                currentScenario={currentScenario}
+                onScenarioChange={handleThemeChange}
+              />
+
               <div className="flex items-center gap-1.5 sm:gap-3">
                 <Avatar className="h-8 w-8 sm:h-9 sm:w-9 lg:h-11 lg:w-11 transition-all duration-200">
                   <AvatarImage src="/avatar.png" />

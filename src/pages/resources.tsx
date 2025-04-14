@@ -14,11 +14,15 @@ import { Input } from "@/components/ui/input"
 import { EmergencySOS } from "@/components/emergency-sos"
 import { ReportResourceModal } from "@/components/report-resource-modal"
 import { resourceTypes, mockResources } from "@/lib/data"
+import { PageHeader } from "@/components/page-header"
+import { useLanguage } from "@/lib/language-context"
+import type { TranslationKey } from "@/lib/language-context"
 
 export function ResourcesPage() {
   const [resources, setResources] = React.useState(mockResources)
   const [searchQuery, setSearchQuery] = React.useState("")
-  const [selectedType, setSelectedType] = React.useState<string | null>(null)
+  const [selectedType, setSelectedType] = React.useState<TranslationKey | null>(null)
+  const { t } = useLanguage()
 
   // Filter resources based on search query and selected type
   const filteredResources = React.useMemo(() => {
@@ -35,13 +39,13 @@ export function ResourcesPage() {
   }, [resources, searchQuery, selectedType])
 
   // Handle resource type selection
-  const handleTypeSelect = (type: string) => {
+  const handleTypeSelect = (type: TranslationKey) => {
     setSelectedType(selectedType === type ? null : type)
   }
 
   // Handle new resource submission
   const handleResourceSubmit = (data: {
-    type: string;
+    type: TranslationKey;
     title: string;
     description: string;
     location: string;
@@ -101,43 +105,40 @@ export function ResourcesPage() {
       </div>
 
       <main className="max-w-7xl mx-auto px-6 pt-8">
-        {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold flex items-center gap-3 mb-2">
-            <Globe className="h-8 w-8 text-blue-600" />
-            Available Resources
-          </h1>
-          <p className="text-gray-600">Find or report available resources in your area</p>
-        </div>
-
-        {/* Search and Filter Section */}
-        <div className="mb-8 flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
-            <Input 
-              placeholder="Search resources..." 
-              className="pl-9"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+        <PageHeader
+          title="available_resources"
+          description="resource_types"
+          icon={Globe}
+          iconColor="text-blue-600"
+        >
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+              <Input 
+                placeholder={t('search_placeholder')}
+                className="pl-9"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <Button 
+              variant="outline" 
+              className="gap-2"
+              onClick={() => {
+                setSearchQuery("")
+                setSelectedType(null)
+              }}
+            >
+              <Filter className="h-4 w-4" />
+              {t('clear_filters')}
+            </Button>
+            <ReportResourceModal onSubmit={handleResourceSubmit} />
           </div>
-          <Button 
-            variant="outline" 
-            className="gap-2"
-            onClick={() => {
-              setSearchQuery("")
-              setSelectedType(null)
-            }}
-          >
-            <Filter className="h-4 w-4" />
-            Clear Filters
-          </Button>
-          <ReportResourceModal onSubmit={handleResourceSubmit} />
-        </div>
+        </PageHeader>
 
         {/* Resource Types */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">Resource Types</h2>
+          <h2 className="text-2xl font-bold mb-4">{t('resource_types')}</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
             {resourceTypes.map((type) => (
               <Button
@@ -155,7 +156,7 @@ export function ResourcesPage() {
                     className: `h-6 w-6 ${selectedType === type.name ? "text-white" : ""}`
                   })}
                 </div>
-                <span>{type.name}</span>
+                <span>{t(type.name)}</span>
               </Button>
             ))}
           </div>
@@ -164,16 +165,16 @@ export function ResourcesPage() {
         {/* Available Resources */}
         <div>
           <h2 className="text-2xl font-bold mb-4">
-            Available Resources
+            {t('available_resources')}
             {filteredResources.length > 0 && (
               <span className="text-sm font-normal text-gray-500 ml-2">
-                ({filteredResources.length} found)
+                ({filteredResources.length} {t('found')})
               </span>
             )}
           </h2>
           {filteredResources.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
-              <p>No resources found matching your criteria.</p>
+              <p>{t('no_resources_found')}</p>
               <Button 
                 variant="link" 
                 className="mt-2"
@@ -182,13 +183,17 @@ export function ResourcesPage() {
                   setSelectedType(null)
                 }}
               >
-                Clear all filters
+                {t('clear_filters')}
               </Button>
             </div>
           ) : (
             <div className="grid gap-4">
               {filteredResources.map((resource) => (
-                <Card key={resource.id} className="hover:shadow-md transition-shadow">
+                <Card 
+                  key={resource.id} 
+                  id={`resource-${resource.id}`}
+                  className="hover:shadow-md transition-shadow"
+                >
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
                       <div className={`p-3 rounded-lg ${resource.color}`}>
@@ -197,10 +202,7 @@ export function ResourcesPage() {
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-2">
                           <h3 className="font-semibold text-lg">{resource.title}</h3>
-                          <span className="text-sm text-gray-500 flex items-center gap-1">
-                            <Clock className="h-4 w-4" />
-                            {resource.timeAgo}
-                          </span>
+                          <span className="text-sm text-gray-500">{resource.timeAgo}</span>
                         </div>
                         <p className="text-gray-600 text-sm mb-3">{resource.description}</p>
                         <div className="flex flex-wrap gap-4 text-sm">
@@ -215,7 +217,7 @@ export function ResourcesPage() {
                             className="text-green-600 font-medium p-0 h-auto hover:text-green-700"
                             onClick={() => handleVerify(resource.id)}
                           >
-                            ✅ Verified by {resource.verifiedCount} people
+                            ✅ {t('verified_by')} {resource.verifiedCount} {t('people')}
                           </Button>
                         </div>
                         <div className="mt-4 flex items-center gap-4">
@@ -229,7 +231,7 @@ export function ResourcesPage() {
                             }}
                           >
                             <MessageCircle className="h-4 w-4 mr-2" />
-                            Contact Provider
+                            {t('contact_provider')}
                           </Button>
                           <Button 
                             variant="outline" 
@@ -238,7 +240,7 @@ export function ResourcesPage() {
                             onClick={() => handleGetDirections(resource)}
                           >
                             <MapPin className="h-4 w-4 mr-2" />
-                            Get Directions
+                            {t('get_directions')}
                           </Button>
                         </div>
                       </div>

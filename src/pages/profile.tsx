@@ -15,7 +15,8 @@ import {
   ChevronRight,
   MapPinned,
   History,
-  AlertCircle
+  AlertCircle,
+  Trash
 } from "lucide-react"
 import { useNavigate, Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
@@ -23,9 +24,12 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
+import { useToast } from "@/components/ui/use-toast"
+import { Toaster } from "@/components/ui/toaster"
 
 export function ProfilePage() {
   const navigate = useNavigate()
+  const { toast } = useToast()
   const [notifications, setNotifications] = useState(true)
   const [locationSharing, setLocationSharing] = useState(true)
   const [emergencyAlerts, setEmergencyAlerts] = useState(true)
@@ -72,6 +76,39 @@ export function ProfilePage() {
     }
   ]
 
+  const handleEditProfile = () => {
+    toast({
+      title: "Edit Profile",
+      description: "Profile editing is not yet implemented.",
+      duration: 3000,
+    })
+  }
+
+  const handleCallContact = (phone: string) => {
+    window.location.href = `tel:${phone}`
+    toast({
+      title: "Calling",
+      description: `Calling ${phone}...`,
+      duration: 3000,
+    })
+  }
+
+  const handleEditLocation = (locationName: string) => {
+    toast({
+      title: "Edit Location",
+      description: `Editing ${locationName} is not yet implemented.`,
+      duration: 3000,
+    })
+  }
+
+  const handleDeleteLocation = (locationName: string) => {
+    toast({
+      title: "Delete Location",
+      description: `${locationName} has been deleted.`,
+      duration: 3000,
+    })
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -101,7 +138,10 @@ export function ProfilePage() {
                     <AvatarImage src="/avatars/rajesh.jpg" alt="Rajesh Kumar" />
                     <AvatarFallback>RK</AvatarFallback>
                   </Avatar>
-                  <button className="absolute bottom-0 right-0 bg-primary text-white p-1 rounded-full">
+                  <button 
+                    className="absolute bottom-0 right-0 bg-primary text-white p-1 rounded-full"
+                    onClick={handleEditProfile}
+                  >
                     <Settings className="h-4 w-4" />
                   </button>
                 </div>
@@ -142,7 +182,10 @@ export function ProfilePage() {
                     <p className="font-medium">Priya Sharma (Wife)</p>
                     <p className="text-gray-600">+91 98765 12345</p>
                   </div>
-                  <button className="text-primary hover:text-primary/80">
+                  <button 
+                    className="text-primary hover:text-primary/80"
+                    onClick={() => handleCallContact("+91 98765 12345")}
+                  >
                     <Phone className="h-5 w-5" />
                   </button>
                 </div>
@@ -151,7 +194,10 @@ export function ProfilePage() {
                     <p className="font-medium">Dr. Amit Patel</p>
                     <p className="text-gray-600">+91 98765 98765</p>
                   </div>
-                  <button className="text-primary hover:text-primary/80">
+                  <button 
+                    className="text-primary hover:text-primary/80"
+                    onClick={() => handleCallContact("+91 98765 98765")}
+                  >
                     <Phone className="h-5 w-5" />
                   </button>
                 </div>
@@ -172,7 +218,20 @@ export function ProfilePage() {
                       <p className="text-gray-600">B-12, Sector 62, Noida</p>
                     </div>
                   </div>
-                  <Badge>Primary</Badge>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      className="text-primary hover:text-primary/80"
+                      onClick={() => handleEditLocation("Home")}
+                    >
+                      <Edit className="h-5 w-5" />
+                    </button>
+                    <button 
+                      className="text-red-600 hover:text-red-700"
+                      onClick={() => handleDeleteLocation("Home")}
+                    >
+                      <Trash className="h-5 w-5" />
+                    </button>
+                  </div>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
@@ -181,6 +240,20 @@ export function ProfilePage() {
                       <p className="font-medium">Office</p>
                       <p className="text-gray-600">Tech Park, Sector 144, Noida</p>
                     </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      className="text-primary hover:text-primary/80"
+                      onClick={() => handleEditLocation("Office")}
+                    >
+                      <Edit className="h-5 w-5" />
+                    </button>
+                    <button 
+                      className="text-red-600 hover:text-red-700"
+                      onClick={() => handleDeleteLocation("Office")}
+                    >
+                      <Trash className="h-5 w-5" />
+                    </button>
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
@@ -191,7 +264,20 @@ export function ProfilePage() {
                       <p className="text-gray-600">Sector 19, Noida</p>
                     </div>
                   </div>
-                  <Badge variant="outline">Emergency</Badge>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      className="text-primary hover:text-primary/80"
+                      onClick={() => handleEditLocation("Max Super Speciality Hospital")}
+                    >
+                      <Edit className="h-5 w-5" />
+                    </button>
+                    <button 
+                      className="text-red-600 hover:text-red-700"
+                      onClick={() => handleDeleteLocation("Max Super Speciality Hospital")}
+                    >
+                      <Trash className="h-5 w-5" />
+                    </button>
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -200,33 +286,55 @@ export function ProfilePage() {
           {/* Settings */}
           <Card>
             <CardContent className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Settings & Preferences</h2>
+              <h2 className="text-xl font-semibold mb-4">Settings</h2>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Bell className="h-5 w-5 text-primary" />
-                    <div>
-                      <p className="font-medium">Emergency Alerts</p>
-                      <p className="text-gray-600">Receive alerts for nearby emergencies</p>
-                    </div>
-                  </div>
-                  <Switch />
+                  <p className="font-medium">Notifications</p>
+                  <Switch 
+                    checked={notifications} 
+                    onCheckedChange={setNotifications}
+                  />
                 </div>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <MapPin className="h-5 w-5 text-primary" />
-                    <div>
-                      <p className="font-medium">Location Sharing</p>
-                      <p className="text-gray-600">Share location with emergency contacts</p>
+                  <p className="font-medium">Location Sharing</p>
+                  <Switch 
+                    checked={locationSharing} 
+                    onCheckedChange={setLocationSharing}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <p className="font-medium">Emergency Alerts</p>
+                  <Switch 
+                    checked={emergencyAlerts} 
+                    onCheckedChange={setEmergencyAlerts}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Recent Activity */}
+          <Card>
+            <CardContent className="p-6">
+              <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
+              <div className="space-y-4">
+                {recentActivity.map((activity, index) => (
+                  <div key={index} className="flex items-center gap-3">
+                    <div className={`p-2 rounded-full ${activity.color}`}>
+                      {React.createElement(activity.icon, { className: "h-5 w-5" })}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium">{activity.title}</p>
+                      <p className="text-gray-600 text-sm">{activity.time}</p>
                     </div>
                   </div>
-                  <Switch />
-                </div>
+                ))}
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
+      <Toaster />
     </div>
   )
 } 

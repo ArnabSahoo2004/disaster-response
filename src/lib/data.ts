@@ -5,19 +5,22 @@ import {
   Stethoscope,
   MessageCircle,
 } from "lucide-react"
+import { translations } from "./language-context"
+
+type ResourceType = keyof typeof translations.en
 
 export const resourceTypes = [
-  { name: "Water", icon: Droplets, color: "bg-blue-100 text-blue-600" },
-  { name: "Food", icon: Utensils, color: "bg-orange-100 text-orange-600" },
-  { name: "Shelter", icon: Home, color: "bg-green-100 text-green-600" },
-  { name: "Medical", icon: Stethoscope, color: "bg-red-100 text-red-600" },
-  { name: "Other", icon: MessageCircle, color: "bg-purple-100 text-purple-600" },
+  { name: "water" as ResourceType, icon: Droplets, color: "bg-blue-100 text-blue-600" },
+  { name: "food" as ResourceType, icon: Utensils, color: "bg-orange-100 text-orange-600" },
+  { name: "shelter" as ResourceType, icon: Home, color: "bg-green-100 text-green-600" },
+  { name: "medical" as ResourceType, icon: Stethoscope, color: "bg-red-100 text-red-600" },
+  { name: "other" as ResourceType, icon: MessageCircle, color: "bg-purple-100 text-purple-600" },
 ]
 
 export const mockResources = [
   {
     id: '1',
-    type: "Water",
+    type: "water",
     title: "Clean Water Available",
     description: "Bottled water and water purification tablets available",
     location: "Community Center, Downtown",
@@ -31,7 +34,7 @@ export const mockResources = [
   },
   {
     id: '2',
-    type: "Food",
+    type: "food",
     title: "Emergency Food Supplies",
     description: "Non-perishable food items and MREs available",
     location: "Red Cross Shelter, West Side",
@@ -45,7 +48,7 @@ export const mockResources = [
   },
   {
     id: '3',
-    type: "Shelter",
+    type: "shelter",
     title: "Emergency Shelter",
     description: "Temporary shelter with basic amenities",
     location: "High School Gymnasium",
@@ -59,7 +62,7 @@ export const mockResources = [
   },
   {
     id: '4',
-    type: "Medical",
+    type: "medical",
     title: "First Aid Supplies",
     description: "Basic medical supplies and first aid kits",
     location: "Local Clinic, North Area",
